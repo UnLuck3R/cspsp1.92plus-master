@@ -1,0 +1,6 @@
+movement = absolute
+music = off
+ff = on
+menu = analog
+name = UnLuck3R
+map = gunstest
