@@ -233,8 +233,14 @@ int GameStateLoading::Load(int stage) {
 			gRoundStartSounds[1] = mSoundSystem->LoadSample("sfx/GOGOGO.wav");
 			gRoundStartSounds[2] = mSoundSystem->LoadSample("sfx/AllRightLetsMoveOut.wav");
 			gRegenSound = mSoundSystem->LoadSample("sfx/regeneration.wav");
-			gZoomSounds[0] = mSoundSystem->LoadSample("sfx/Zoom.wav");
-			gZoomSounds[1] = mSoundSystem->LoadSample("sfx/Zoom2.wav");
+			gZoomSound = mSoundSystem->LoadSample("sfx/Zoom.wav");
+			gHumiliationSound = mSoundSystem->LoadSample("sfx/Humiliation.wav");
+			gGotItSound = mSoundSystem->LoadSample("sfx/gotit.wav");
+			gKillSounds[0] = mSoundSystem->LoadSample("sfx/Double_Kill.wav");
+			gKillSounds[1] = mSoundSystem->LoadSample("sfx/triple_kill.wav");
+			gKillSounds[2] = mSoundSystem->LoadSample("sfx/ultrakill.wav");
+			gKillSounds[3] = mSoundSystem->LoadSample("sfx/monster_kill.wav");
+			gHolyShitSound = mSoundSystem->LoadSample("sfx/HolyShit.wav");
 			break;
 		}
 

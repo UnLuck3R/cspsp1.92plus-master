@@ -24,11 +24,17 @@ Person::Person(JQuad* quads[], JQuad* deadquad, std::vector<Bullet*>* bullets, s
 	//mState = 0;
 	mStateTime = 0.0f;
 	mHealth = 100;
+
 	mRegen = 0.0f;
 	mRegenlol = 0.0f;
 	mRegenTimer = 2.0f; //default 1 sec
 	mRegenPoints = 5; //default 1 HP
 	mRegenSfxType = 0;
+	mGunMode = 0;
+	mLRTimer = 0.0f;
+	mComboType = 0;
+	mComboTimer = 0;
+
 	mMoney = 800;
 	mRecoilAngle = 0.0f;
 	SetTotalRotation(M_PI_2);
@@ -62,12 +68,14 @@ Person::Person(JQuad* quads[], JQuad* deadquad, std::vector<Bullet*>* bullets, s
 	mIsPlayerOnline = false;
 	mIsFiring = false;
 	mHasFired = false;
+	mHasLR = false;
 
 	mIsFlashed = false;
 	mFlashTime = 0.0f;
 	mFlashIntensity = 0.0f;
 
 	mIsInBuyZone = false;
+	mIsInBombZone = false;
 
 	mNode = NULL;
 	mTargetNode = NULL;
@@ -258,9 +266,9 @@ void Person::Update(float dt)
 					mHealth += 1;
 					mRegenPoints -= 1;
 					mRegenlol = 0.0f;
-				}
-				if (mRegenPoints == 5) {
+					if (mRegenPoints == 4) {
 					mRegenSfxType = 1;
+					}
 				}
 				if (mRegenPoints <= 0){
 				mRegen = 0.0f;
@@ -277,6 +285,7 @@ void Person::Update(float dt)
 	}
 	if (mMoveState != NOTMOVING) {
 		mRegen = 0.0f;
+		mRegenPoints = 5;
 	}
 
 	mWalkAngle = mAngle;
@@ -1144,6 +1153,8 @@ void Person::Reset()
 	mRadarTime = 0.0f;
 
 	mHasFlag = false;
+
+	mGunMode = 0;
 }
 
 void Person::TakeDamage(int damage) {

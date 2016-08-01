@@ -313,6 +313,8 @@ void GameStatePlay::CheckInput(float dt)
 		mPlayer->RotateFacing(0.005f*dt);
 	}
 
+	
+
 	/*if (mPlayer->mGunIndex == PRIMARY || mPlayer->mGunIndex == KNIFE) {
 		if (mEngine->GetButtonState(PSP_CTRL_CROSS) && !cross)
 		{
@@ -363,6 +365,121 @@ void GameStatePlay::CheckInput(float dt)
 	else {
 		if (mPlayer->mIsFiring) {
 			mPlayer->StopFire();
+		}
+	}
+
+	bool mLRState = true;
+		if (mPlayer->mHasLR) {
+				mLRState = false;
+		}
+
+	if (mLRState) {
+		if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+			mPlayer->mLRTimer +=dt;
+		}
+		if (!mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+			mPlayer->mLRTimer = 0;
+		}
+	}
+	if (mPlayer->mLRTimer > 400) {
+		mPlayer->mHasLR = true;
+	}
+	else if (mPlayer->mLRTimer <= 400 &! mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+		mPlayer->mHasLR = false;
+	}
+
+	Gun *gun = mSpec->GetCurrentGun()->mGun;
+	if (mPlayer->mGunIndex == PRIMARY) {
+		if (gun->mId == 19 ||gun->mId == 20 ||gun->mId == 21 || gun->mId == 22 ) {
+			if (mPlayer->mState != SWITCHING && mPlayer->mState != RELOADING) {
+				if (mPlayer->mGunMode == 0) {
+					if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+						if (mPlayer->mLRTimer > 400) {
+							mPlayer->mLRTimer = 0;
+							mPlayer->mGunMode = 1;
+							gSfxManager->PlaySample(gZoomSound);
+						}
+					}
+				}
+				if (mPlayer->mGunMode == 1) {
+					if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+						if (gun->mId == 19 ||gun->mId == 20) {
+							if (mPlayer->mLRTimer > 400) {
+								mPlayer->mLRTimer = 0;
+								mPlayer->mGunMode = 0;
+								gSfxManager->PlaySample(gZoomSound);
+							}
+						}
+						else if(gun->mId == 21 || gun->mId == 22) {
+							if (mPlayer->mLRTimer > 400) {
+								mPlayer->mLRTimer = 0;
+								mPlayer->mGunMode = 2;
+								gSfxManager->PlaySample(gZoomSound);
+							}
+						}
+					}
+				}
+				if (mPlayer->mGunMode == 2) {
+					if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+						if (mPlayer->mLRTimer > 400) {
+							mPlayer->mLRTimer = 0;
+							mPlayer->mGunMode = 0;
+							gSfxManager->PlaySample(gZoomSound);
+						}
+					}
+				}
+			}
+			if (mPlayer->mState == RELOADING) {
+			mPlayer->mGunMode = 0;
+			mPlayer->mLRTimer = 0;
+			}
+			else if (mPlayer->mState == SWITCHING) {
+			mPlayer->mGunMode = 0;
+			mPlayer->mLRTimer = 0;
+			}
+		}
+		else if (mPlayer->GetCurrentGun()->mGun->mId == 23 ||gun->mId == 16) {
+			if (mPlayer->mState != SWITCHING && mPlayer->mState != RELOADING && mPlayer->mState != ATTACKING) {
+				if (mPlayer->mGunMode == 0) {
+					if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+						if (mPlayer->mLRTimer > 400) {
+							mPlayer->mLRTimer = 0;
+							mPlayer->mGunMode = 1;
+							gSfxManager->PlaySample(gZoomSound);
+						}
+					}
+				}
+				if (mPlayer->mGunMode == 1) {
+					if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+						if (mPlayer->mLRTimer > 400) {
+							mPlayer->mLRTimer = 0;
+							mPlayer->mGunMode = 2;
+							gSfxManager->PlaySample(gZoomSound);
+						}
+					}
+				}
+				if (mPlayer->mGunMode == 2) {
+					if (mEngine->GetButtonState(PSP_CTRL_LTRIGGER+PSP_CTRL_RTRIGGER)) {
+						if (mPlayer->mLRTimer > 400) {
+							mPlayer->mLRTimer = 0;
+							mPlayer->mGunMode = 0;
+							gSfxManager->PlaySample(gZoomSound);
+						}
+					}
+				}
+			}
+			if (mPlayer->mState == RELOADING) {
+			mPlayer->mGunMode = 0;
+			mPlayer->mLRTimer = 0;
+			}
+			else if (mPlayer->mState == SWITCHING) {
+			mPlayer->mGunMode = 0;
+			mPlayer->mLRTimer = 0;
+			}
+		}
+		else {
+		mPlayer->mGunMode = 0;
+		mPlayer->mLRTimer = 0;
 		}
 	}
 

@@ -70,6 +70,13 @@ public:
 	bool mIsOnline;
 	int *mGameType;
 
+	int mFunType;
+	float mFunTime;
+	float mFunTipTime;
+	int mFunTipType;
+	int mFunComboType;
+	float mFunComboTime;
+
 	Hud();
 	~Hud();
 	

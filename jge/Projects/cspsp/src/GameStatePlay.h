@@ -60,6 +60,7 @@ private:
 
 	//bool cross;
 	//int mWinner;
+	bool mLRState;
 
 public:
 	GameStatePlay(GameApp* parent);

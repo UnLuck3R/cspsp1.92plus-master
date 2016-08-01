@@ -92,7 +92,7 @@ static char *mCredits[] =
 	"Some gun graphics - CS2D",
 	"Background - Crisp",
 	"",
-	"Effects - CS 1.6, LittleFighter2 & Revamped",
+	"Effects - CS 1.6 & CS2D",
 	"Raindrops - Charvin Kessler",
 	"",
 	"coolguy5678",
@@ -114,8 +114,8 @@ static char *mCredits[] =
 	"Danzel and Jeff Chen for their input system",
 	"PS2DEV forums for help and info",
 	"Google for its App Engine",
-	"Vlad1k for his new master server",
-	"Kamil09875 for program help",
+	"Vlad for his Custom master server",
+	"Kamil09875 and Goeos for program help",
 };
 
 

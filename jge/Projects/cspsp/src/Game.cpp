@@ -27,8 +27,8 @@ Game::Game(GameApp* parent): GameState(parent)
 	mFFAWinner = NULL;
 	mChatTimer = 0.0f;
 	mIsChatEnabled = true;
-	mSnipeType = 0;
-	mMessageTimer = 0;
+	mTipType = 0;
+	mTipTime = 100;
 }
 
 //------------------------------------------------------------------------------------------------
@@ -93,7 +93,6 @@ void Game::Init()
 
 	mScoreState = 0;
 	mHitTime = 0;
-	mSnipeType = 0;
 }
 
 //------------------------------------------------------------------------------------------------
@@ -130,7 +129,11 @@ void Game::End()
 	}
 
 	mGuiController->SetCurr(0);
-	mSnipeType = 0;
+	mPlayer->mGunMode = 0;
+	mHud->mFunType = 0;
+	mHud->mFunTime = 0;
+	mHud->mFunTipTime = 0;
+	mHud->mFunComboTime= 0;
 }
 
 //------------------------------------------------------------------------------------------------
@@ -936,11 +939,13 @@ void Game::CheckCollisions()
 
 				if (person1 == mPlayer || !mIsOnline) { // don't really need to know for other (online)players
 					person1->mIsInBuyZone = false;
+					person1->mIsInBombZone = false;
 					if (mGameType == FFA) {
 						person1->mIsInBuyZone = true;
 					}
 					else {
 						std::vector<BuyZone>* buyzones = NULL;
+						std::vector<BombZone>* bombzones = NULL;
 						if (person1->mTeam == CT || mGameType == FFA) {
 							buyzones = &(mMap->mCTBuyZones);
 						}
@@ -951,6 +956,14 @@ void Game::CheckCollisions()
 							for (int j=0; j<buyzones->size(); j++) {
 								if (person1->mX >= (*buyzones)[j].x1 && person1->mX <= (*buyzones)[j].x2 && person1->mY >= (*buyzones)[j].y1 && person1->mY <= (*buyzones)[j].y2) {
 									person1->mIsInBuyZone = true;
+									break;
+								}
+							}
+						}
+						if (bombzones != NULL) {
+							for (int j=0; j<buyzones->size(); j++) {
+								if (person1->mX >= (*bombzones)[j].x1 && person1->mX <= (*bombzones)[j].x2 && person1->mY >= (*bombzones)[j].y1 && person1->mY <= (*bombzones)[j].y2) {
+									person1->mIsInBombZone = true;
 									break;
 								}
 							}
@@ -1240,6 +1253,31 @@ void Game::Update(float dt)
 	mPlayer->mRegenSfxType = 0;
 	}
 
+	if (mTipTime >= 0 && mTipType == 0) {
+		mTipTime -= dt/10;
+		if (mTipTime < 0) {
+			mTipTime = 0;
+			mTipType = 1;
+		}
+	}
+	
+	if (mTipTime >= 0 && mTipType == 1) {
+		mTipTime += dt/10;
+		if (mTipTime > 100) {
+			mTipTime = 100;
+			mTipType = 0;
+		}
+	}
+
+	if (mPlayer->mComboType != 0) {
+		mPlayer->mComboTimer += dt;
+		if (mPlayer->mComboTimer > 3000) {
+			mPlayer->mComboType = 0;
+			mPlayer->mComboTimer = 0;
+		}
+
+	}
+
 	if (mPlayer->mState == DEAD) {
 		if (mBuyMenu->mIsActive) {
 			mBuyMenu->Disable();
@@ -1352,13 +1390,6 @@ void Game::Update(float dt)
 	else if (mChatTimer > 5000.0f) {
 		mIsChatEnabled = false;
 	}
-	
-	if (mMessageTimer != 0) {
-		mMessageTimer -= dt;
-		if (mMessageTimer < 0) {
-			mMessageTimer = 0;
-		}
-	}
 }
 
 //------------------------------------------------------------------------------------------------
@@ -1371,83 +1402,59 @@ void Game::UpdateCamera(float dt)
 		float b = 0.5f;
 
 		Gun *gun = mSpec->GetCurrentGun()->mGun;
-		if (mSpec->mGunIndex == PRIMARY) {
-			if (gun->mId == 19 ||gun->mId == 20 ||gun->mId == 21 || gun->mId == 22 || mPlayer->GetCurrentGun()->mGun->mId == 23 ||gun->mId == 16) {
-				if (mPlayer->mState != SWITCHING && mPlayer->mState != RELOADING) {
-					if (mSnipeType == 0) {
-						if (mEngine->GetButtonClick(PSP_CTRL_LEFT)) {
-						mSnipeType = 1;
-						gSfxManager->PlaySample(gZoomSounds[0]);
-						}
-					}
-					if (mSnipeType == 1) {
-						if (mEngine->GetButtonClick(PSP_CTRL_LEFT)) {
-							if (gun->mId == 19 ||gun->mId == 20) {
-							mSnipeType = 0;
-							gSfxManager->PlaySample(gZoomSounds[0]);
-							}
-							else if(gun->mId == 21 || gun->mId == 22 || mPlayer->GetCurrentGun()->mGun->mId == 23 ||gun->mId == 16) {
-							mSnipeType = 2;
-							gSfxManager->PlaySample(gZoomSounds[1]);
-							}
-						}
-					}
-					if (mSnipeType == 2) {
-						if (mEngine->GetButtonClick(PSP_CTRL_LEFT)) {
-						mSnipeType = 0;
-						gSfxManager->PlaySample(gZoomSounds[0]);
-						}
-					}
-					if (mPlayer->mState == RELOADING) {
-					mSnipeType = 0;
-					}
-				}
-				else if (mPlayer->mState == SWITCHING) {
-				mSnipeType = 0;
-				}
-			else {
-			mSnipeType = 0;
-			}
+
 				if (gun->mId == 19 ||gun->mId == 20) {
-					if (mSnipeType == 1) {
-					a = 1200;
+					if (mSpec->mGunMode == 0) {
+					a = 500+mSpec->mLRTimer*1.75;
+					b = 0.5-mSpec->mLRTimer/1000;
+					}
+					if (mSpec->mGunMode == 1) {
+					a = 1200-mSpec->mLRTimer*1.75;
+					b = 0.1+mSpec->mLRTimer/1000;
 					}
 				}
 				else if (gun->mId == 21 || gun->mId == 22) {
-					if (mSnipeType == 1) {
-					a = 1800;
+					if (mSpec->mGunMode == 0) {
+					a = 500+mSpec->mLRTimer*3.25;
+					b = 0.5-mSpec->mLRTimer/1000;
+					}
+					if (mSpec->mGunMode == 1) {
+					a = 1800+mSpec->mLRTimer*1.75;
 					b = 0.1f;
 					}
-					if (mSnipeType == 2) {
-					a = 2500;
-					b = 0.1f;
-					}
-				}
-				else if (mPlayer->GetCurrentGun()->mGun->mId == 23) {
-					if (mSnipeType == 1) {
-					a = 1800;
-					b = 0.1f;
-					}
-					if (mSnipeType == 2) {
-					a = 2500;
+					if (mSpec->mGunMode == 2) {
+					a = 2500-mSpec->mLRTimer*5;
 					b = 0.1f;
 					}
 				}
-				else if (gun->mId == 16) {
-					if (mSnipeType == 1) {
-					a = 1500;
+				else if (gun->mId == 23 && mSpec->mState != ATTACKING &! mSpec->mIsFiring) {
+					if (mSpec->mGunMode == 0) {
+					a = 500+mSpec->mLRTimer*3.25;
+					b = 0.5-mSpec->mLRTimer/1000;
+					}
+					if (mSpec->mGunMode == 1) {
+					a = 1800+mSpec->mLRTimer*1.75;
 					b = 0.1f;
 					}
-					if (mSnipeType == 2) {
-					a = 2200;
+					if (mSpec->mGunMode == 2) {
+					a = 2500-mSpec->mLRTimer*5;
 					b = 0.1f;
 					}
 				}
-			}
-		}
-		else {
-		mSnipeType = 0;
-		}
+				else if (gun->mId == 16 && mSpec->mState != ATTACKING &! mSpec->mIsFiring) {
+					if (mSpec->mGunMode == 0) {
+					a = 500+mSpec->mLRTimer*2.5;
+					b = 0.5-mSpec->mLRTimer/1000;
+					}
+					if (mSpec->mGunMode == 1) {
+					a = 1500+mSpec->mLRTimer*1.75;
+					b = 0.1f;
+					}
+					if (mSpec->mGunMode == 2) {
+					a = 2200-mSpec->mLRTimer*4.25;
+					b = 0.1f;
+					}
+				}
 		//mCamera->mTX = mPlayer->mX + ((mPlayer->mX-mPlayer->mOldX)*b + cosf(mPlayer->mFacingAngle))/16.6f*a;//dt
 		//mCamera->mTY = mPlayer->mY + ((mPlayer->mY-mPlayer->mOldY)*b + sinf(mPlayer->mFacingAngle))/16.6f*a;//dt
 		mCamera->mTX = mSpec->mX + (cosf(mSpec->mAngle)*mSpec->mSpeed*b + cosf(mSpec->mFacingAngle)/16.6f)*a;//dt
@@ -1617,7 +1624,6 @@ void Game::Render()
 		}
 	}
 
-	if (mPlayer->mState != DEAD) {
 		/*std::vector<Vector2D> p1;
 		std::vector<Vector2D> p2;
 
@@ -1678,17 +1684,157 @@ void Game::Render()
 			}
 		}*/
 
-		if (mPlayer->mState != RELOADING) {
-			if (mSnipeType == 1 ||mSnipeType == 2) {
-				float angle = mPlayer->GetCurrentGun()->mGun->mViewAngle;
+	if (mSpec->mState != RELOADING) {
+		if (mSpec->GetCurrentGun()->mGun->mId == 23 || mSpec->GetCurrentGun()->mGun->mId == 16) {
+			if (mSpec->mGunMode == 0) {
+				if (mSpec->mState != ATTACKING &! mSpec->mIsFiring) {
+					float angle = mSpec->GetCurrentGun()->mGun->mViewAngle;
+					if (angle > 0.0f) {
+						float xarray[6];
+						float yarray[6];
+
+						float facingangle = mSpec->mFacingAngle;
+						float x = mSpec->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
+						float y = mSpec->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
+					
+						xarray[0] = x;
+						yarray[0] = y;
+
+						xarray[1] = x + 1000*cosf(facingangle-angle);
+						yarray[1] = y + 1000*sinf(facingangle-angle);
+
+						xarray[2] = x + 1000*cosf(facingangle-M_PI_2);
+						yarray[2] = y + 1000*sinf(facingangle-M_PI_2);
+
+						xarray[3] = x + 1000*cosf(facingangle-M_PI);
+						yarray[3] = y + 1000*sinf(facingangle-M_PI);
+
+						xarray[4] = x + 1000*cosf(facingangle+M_PI_2);
+						yarray[4] = y + 1000*sinf(facingangle+M_PI_2);
+
+						xarray[5] = x + 1000*cosf(facingangle+angle);
+						yarray[5] = y + 1000*sinf(facingangle+angle);
+
+						int alpha = mSpec->mLRTimer*0.4375;
+						mRenderer->FillPolygon(xarray,yarray,6,ARGB(alpha,0,0,0));
+						//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
+					}
+				}
+			}
+			if (mSpec->mGunMode == 1) {
+				if (mSpec->mState != ATTACKING &! mSpec->mIsFiring) {
+					float angle = mSpec->GetCurrentGun()->mGun->mViewAngle;
+					if (angle > 0.0f) {
+						float xarray[6];
+						float yarray[6];
+
+						float facingangle = mSpec->mFacingAngle;
+						float x = mSpec->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
+						float y = mSpec->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
+					
+						xarray[0] = x;
+						yarray[0] = y;
+
+						xarray[1] = x + 1000*cosf(facingangle-angle);
+						yarray[1] = y + 1000*sinf(facingangle-angle);
+
+						xarray[2] = x + 1000*cosf(facingangle-M_PI_2);
+						yarray[2] = y + 1000*sinf(facingangle-M_PI_2);
+
+						xarray[3] = x + 1000*cosf(facingangle-M_PI);
+						yarray[3] = y + 1000*sinf(facingangle-M_PI);
+
+						xarray[4] = x + 1000*cosf(facingangle+M_PI_2);
+						yarray[4] = y + 1000*sinf(facingangle+M_PI_2);
+
+						xarray[5] = x + 1000*cosf(facingangle+angle);
+						yarray[5] = y + 1000*sinf(facingangle+angle);
+
+						mRenderer->FillPolygon(xarray,yarray,6,ARGB(175,0,0,0));
+						//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
+					}
+				}
+			}
+			if (mSpec->mGunMode == 2) {
+				if (mSpec->mState != ATTACKING &! mSpec->mIsFiring) {
+					float angle = mSpec->GetCurrentGun()->mGun->mViewAngle;
+					if (angle > 0.0f) {
+						float xarray[6];
+						float yarray[6];
+
+						float facingangle = mPlayer->mFacingAngle;
+						float x = mPlayer->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
+						float y = mPlayer->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
+					
+						xarray[0] = x;
+						yarray[0] = y;
+
+						xarray[1] = x + 1000*cosf(facingangle-angle);
+						yarray[1] = y + 1000*sinf(facingangle-angle);
+
+						xarray[2] = x + 1000*cosf(facingangle-M_PI_2);
+						yarray[2] = y + 1000*sinf(facingangle-M_PI_2);
+
+						xarray[3] = x + 1000*cosf(facingangle-M_PI);
+						yarray[3] = y + 1000*sinf(facingangle-M_PI);
+
+						xarray[4] = x + 1000*cosf(facingangle+M_PI_2);
+						yarray[4] = y + 1000*sinf(facingangle+M_PI_2);
+
+						xarray[5] = x + 1000*cosf(facingangle+angle);
+						yarray[5] = y + 1000*sinf(facingangle+angle);
+
+						int alpha = 175-mSpec->mLRTimer*0.4375;
+						mRenderer->FillPolygon(xarray,yarray,6,ARGB(alpha,0,0,0));
+						//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
+					}
+				}
+			}
+		}
+		else {
+			if (mSpec->mGunMode == 0) {
+				float angle = mSpec->GetCurrentGun()->mGun->mViewAngle;
+				if (angle > 0.0f) {
+					float xarray[6];
+					float yarray[6];
+
+					float facingangle = mSpec->mFacingAngle;
+					float x = mSpec->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
+					float y = mSpec->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
+				
+					xarray[0] = x;
+					yarray[0] = y;
+
+					xarray[1] = x + 1000*cosf(facingangle-angle);
+					yarray[1] = y + 1000*sinf(facingangle-angle);
+
+					xarray[2] = x + 1000*cosf(facingangle-M_PI_2);
+					yarray[2] = y + 1000*sinf(facingangle-M_PI_2);
+
+					xarray[3] = x + 1000*cosf(facingangle-M_PI);
+					yarray[3] = y + 1000*sinf(facingangle-M_PI);
+
+					xarray[4] = x + 1000*cosf(facingangle+M_PI_2);
+					yarray[4] = y + 1000*sinf(facingangle+M_PI_2);
+
+					xarray[5] = x + 1000*cosf(facingangle+angle);
+					yarray[5] = y + 1000*sinf(facingangle+angle);
+
+					int alpha = mSpec->mLRTimer*0.4375;
+					mRenderer->FillPolygon(xarray,yarray,6,ARGB(alpha,0,0,0));
+					//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
+				}
+			}
+			if (mSpec->mGunMode == 1) {
+				float angle = mSpec->GetCurrentGun()->mGun->mViewAngle;
 
 				if (angle > 0.0f) {
 					float xarray[6];
 					float yarray[6];
 
-					float facingangle = mPlayer->mFacingAngle;
-					float x = mPlayer->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
-					float y = mPlayer->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
+					float facingangle = mSpec->mFacingAngle;
+					float x = mSpec->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
+					float y = mSpec->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
 				
 					xarray[0] = x;
 					yarray[0] = y;
@@ -1712,37 +1858,47 @@ void Game::Render()
 					//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
 				}
 			}
-		}
-		
-		if (mPlayer->mHealth <= 100.0f) {
-			int alpha = 100*2-mPlayer->mHealth*2;
-			
-			float xarray[6];
-			float yarray[6];
+			if (mSpec->mGunMode == 2) {
+				float angle = mSpec->GetCurrentGun()->mGun->mViewAngle;
+				if (angle > 0.0f) {
+					float xarray[6];
+					float yarray[6];
 
-			float facingangle = mPlayer->mFacingAngle;
-			float x = mPlayer->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
-			float y = mPlayer->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
+					float facingangle = mSpec->mFacingAngle;
+					float x = mSpec->mX - 5*cosf(facingangle)-(dx-SCREEN_WIDTH_2);
+					float y = mSpec->mY - 5*sinf(facingangle)-(dy-SCREEN_HEIGHT_2);
 				
-			xarray[0] = x;
-			yarray[0] = y;
+					xarray[0] = x;
+					yarray[0] = y;
 
-			xarray[1] = x + 1000*cosf(facingangle);
-			yarray[1] = y + 1000*sinf(facingangle);
+					xarray[1] = x + 1000*cosf(facingangle-angle);
+					yarray[1] = y + 1000*sinf(facingangle-angle);
 
-			xarray[2] = x + 1000*cosf(facingangle-M_PI_2);
-			yarray[2] = y + 1000*sinf(facingangle-M_PI_2);
+					xarray[2] = x + 1000*cosf(facingangle-M_PI_2);
+					yarray[2] = y + 1000*sinf(facingangle-M_PI_2);
 
-			xarray[3] = x + 1000*cosf(facingangle-M_PI);
-			yarray[3] = y + 1000*sinf(facingangle-M_PI);
+					xarray[3] = x + 1000*cosf(facingangle-M_PI);
+					yarray[3] = y + 1000*sinf(facingangle-M_PI);
 
-			xarray[4] = x + 1000*cosf(facingangle+M_PI_2);
-			yarray[4] = y + 1000*sinf(facingangle+M_PI_2);
+					xarray[4] = x + 1000*cosf(facingangle+M_PI_2);
+					yarray[4] = y + 1000*sinf(facingangle+M_PI_2);
 
-			xarray[5] = x + 1000*cosf(facingangle);
-			yarray[5] = y + 1000*sinf(facingangle);
+					xarray[5] = x + 1000*cosf(facingangle+angle);
+					yarray[5] = y + 1000*sinf(facingangle+angle);
 
-			mRenderer->FillPolygon(xarray,yarray,6,ARGB(alpha,90,0,0));	
+					int alpha = 175-mSpec->mLRTimer*0.4375;
+					mRenderer->FillPolygon(xarray,yarray,6,ARGB(alpha,0,0,0));
+					//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
+				}
+			}
+		}
+	}
+	if (mPlayer->mState != DEAD) {
+		
+		if (mPlayer->mHealth < 100.0f) {
+			int alpha = (255-mTipTime)*(100-mPlayer->mHealth)/100;
+			mRenderer->FillRect(0.0f,0.0f,SCREEN_WIDTH_F,SCREEN_HEIGHT_F,ARGB(alpha,90,0,0));
+			//int alpha = 100*2-mPlayer->mHealth*2;
 		}
 				//mRenderer->FillCircle(tx,ty,5,ARGB(255,255,0,0));
 
@@ -1794,18 +1950,75 @@ void Game::Render()
 
 		float x = mPlayer->mX-(dx-SCREEN_WIDTH_2); //+sinf(mPlayer->mFacingAngle)*1.5f
 		float y = mPlayer->mY-(dy-SCREEN_HEIGHT_2); //-cosf(mPlayer->mFacingAngle)*1.5f
+		if (mPlayer->GetCurrentGun()->mGun->mId == 19 || mPlayer->GetCurrentGun()->mGun->mId == 20) {
+			if (mPlayer->mGunMode == 0) {
+				float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f;
+				mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,0,255,0));
+				angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f;
+				mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,0,255,0));
 
-		float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f;
-		mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,0,255,0));
-		angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f;
-		mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,0,255,0));
+				int t = (mHitTime-750)/250*255;
+				if (t > 0) {
+					angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f-.1f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+					angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f+.1f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+				}
+			}
+			else {
+				float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f;
+				mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,255,0,255));
+				angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f;
+				mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,255,0,255));
 
-		int t = (mHitTime-750)/250*255;
-		if (t > 0) {
+				int t = (mHitTime-750)/250*255;
+				if (t > 0) {
+					angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f-.1f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+					angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f+.1f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+				}
+			}
+			
+		}
+		else if (mPlayer->GetCurrentGun()->mGun->mId == 23 || mPlayer->GetCurrentGun()->mGun->mId == 16 || mPlayer->GetCurrentGun()->mGun->mId == 21 || mPlayer->GetCurrentGun()->mGun->mId == 22) {
+			if (mPlayer->mGunMode != 0) {
+				if (mPlayer->GetCurrentGun()->mGun->mId == 21 || mPlayer->GetCurrentGun()->mGun->mId == 22) {
+					float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,255,0,255));
+					angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,255,0,255));
+				}
+				else {
+					if (mPlayer->mState != ATTACKING &! mPlayer->mIsFiring) {
+						float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f;
+						mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,255,0,255));
+						angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f;
+						mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,255,0,255));
+					}
+				}
+				int t = (mHitTime-750)/250*255;
+				if (t > 0) {
+					float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f-.1f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+					angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f+.1f;
+					mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+				}
+			}
+		}
+		else if (mPlayer->GetCurrentGun()->mGun->mId != 19 && mPlayer->GetCurrentGun()->mGun->mId != 20 && mPlayer->GetCurrentGun()->mGun->mId != 23 && mPlayer->GetCurrentGun()->mGun->mId != 16 && mPlayer->GetCurrentGun()->mGun->mId != 21 && mPlayer->GetCurrentGun()->mGun->mId != 22) {
+			float angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f;
+			mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,0,255,0));
+			angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f;
+			mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*40,y+sinf(angle)*40,ARGB(200,0,255,0));
+
+			int t = (mHitTime-750)/250*255;
+			if (t > 0) {
 			angle = mPlayer->mFacingAngle-mPlayer->mRecoilAngle*0.5f-.1f;
 			mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
 			angle = mPlayer->mFacingAngle+mPlayer->mRecoilAngle*0.5f+.1f;
 			mRenderer->DrawLine(x+cosf(angle)*30,y+sinf(angle)*30,x+cosf(angle)*45,y+sinf(angle)*45,ARGB(t,255,0,0));
+			}
 		}
 	}
 	// draw some text
@@ -1829,9 +2042,15 @@ void Game::Render()
 		mRenderer->RenderQuad(gHealthBorderQuad,10,SCREEN_HEIGHT-58);
 		mRenderer->RenderQuad(gHealthFillQuad,10,SCREEN_HEIGHT-58+44-height+2);
 
-		gFont->SetColor(ARGB(255,255,255,255));
-		gFont->SetScale(0.7f);
-		gFont->DrawShadowedString(buffer, 10+((mPlayer->mHealth == 100)?22:24), SCREEN_HEIGHT_F-40.0f, JGETEXT_CENTER);
+		if (mPlayer->mHealth > 20) {
+			gFont->SetColor(ARGB(255,255,255,255));
+		}
+		else {
+			gFont->SetColor(ARGB(255,255,0,0));
+		}
+			gFont->SetScale(0.7f);
+			gFont->DrawShadowedString(buffer, 10+((mPlayer->mHealth == 100)?22:24), SCREEN_HEIGHT_F-40.0f, JGETEXT_CENTER);
+			
 
 		//gHudFont->SetScale(1.5f);
 
@@ -2951,6 +3170,61 @@ void Game::UpdateScores(Person* attacker, Person* victim, Gun* weapon) {
 		}
 	}
 
+	if (mPlayer == attacker && mPlayer != victim) {
+		if (weapon->mId == 0) {
+			mHud->mFunType = 1;
+			mHud->mFunTime = 2000;
+			mHud->mFunTipTime = 50;
+			gSfxManager->PlaySample(gHumiliationSound);
+		}
+		else if (weapon->mId == 26) {
+			mHud->mFunType = 2;
+			mHud->mFunTime = 2000;
+			mHud->mFunTipTime = 50;
+			gSfxManager->PlaySample(gGotItSound);
+		}
+	}
+
+	if (mPlayer == attacker && mPlayer == victim) {
+		gSfxManager->PlaySample(gHolyShitSound);
+	}
+
+	if (mPlayer == attacker && mPlayer != victim) {
+		if (mPlayer->mComboType == 0) {
+			mPlayer->mComboType++;
+			mHud->mFunComboType = 1;
+			mHud->mFunComboTime = 1000;
+		}
+		else if (mPlayer->mComboType == 1) {
+			gSfxManager->PlaySample(gKillSounds[0]);
+			mPlayer->mComboType++;
+			mPlayer->mComboTimer = 0;
+			mHud->mFunComboType = 2;
+			mHud->mFunComboTime = 1000;
+		}
+		else if (mPlayer->mComboType == 2) {
+			gSfxManager->PlaySample(gKillSounds[1]);
+			mPlayer->mComboType++;
+			mPlayer->mComboTimer = 0;
+			mHud->mFunComboType = 3;
+			mHud->mFunComboTime = 1000;
+		}
+		else if (mPlayer->mComboType == 3) {
+			gSfxManager->PlaySample(gKillSounds[2]);
+			mPlayer->mComboType++;
+			mPlayer->mComboTimer = 0;
+			mHud->mFunComboType = 4;
+			mHud->mFunComboTime = 1000;
+		}
+		else if (mPlayer->mComboType >= 4) {
+			gSfxManager->PlaySample(gKillSounds[3]);
+			mPlayer->mComboType++;
+			mPlayer->mComboTimer = 0;
+			mHud->mFunComboType = 5;
+			mHud->mFunComboTime = 1000;
+		}
+	}
+
 	if (mGameType == FFA || mGameType == CTF) {
 		if (victim == mPlayer) {
 			mRespawnTimer = mRespawnTime*1000;
@@ -3168,5 +3442,4 @@ void Game::Hash() {
 	{
 		mGrid->HashGunObject(mGunObjects[i]);
 	}
-	mSnipeType = 0;
 }

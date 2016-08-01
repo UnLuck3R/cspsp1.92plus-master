@@ -78,10 +78,6 @@ void Danzeff::Update(float dt)
 	else {
 		mString += (char)c;
 	}
-	
-	if(mEngine->GetButtonClick(PSP_CTRL_UP)||mEngine->GetButtonClick(PSP_CTRL_RIGHT)) {
-	Disable();
-	}
 }
 
 //------------------------------------------------------------------------------------------------

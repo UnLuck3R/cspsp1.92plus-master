@@ -150,7 +150,7 @@ void GameStateMenu::Render()
 		gFont->DrawString(info,10+mInfoX,133+i*25);
 
 		gFont->SetColor(ARGB(255,255,255,255));
-		gFont->DrawShadowedString("Official Forums: http://s4.zetaboards.com/CSPSP", 5, SCREEN_HEIGHT-15);
+		gFont->DrawShadowedString("Official Website: http://cspsp.appspot.com", 5, SCREEN_HEIGHT-15);
 
 		gFont->SetBase(0);
 		gFont->SetColor(ARGB(255,200,200,200));

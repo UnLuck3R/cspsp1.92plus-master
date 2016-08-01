@@ -166,9 +166,8 @@ public:
 	void NewSpec(Person* attacker, int index);
 	virtual void Buy(int index);
 
-	int mSnipeType;
-	float mMessageTimer;
-	
+	int mTipType;
+	float mTipTime;
 
 	virtual void Explode(Grenade* grenade);
 

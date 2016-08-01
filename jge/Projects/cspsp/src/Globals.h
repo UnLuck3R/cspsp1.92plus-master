@@ -94,7 +94,11 @@ extern JSample* gGrenadeBounceSound;
 extern JSample* gHitIndicatorSound;
 extern JSample* gRoundStartSounds[3];
 extern JSample* gRegenSound;
-extern JSample* gZoomSounds[2];
+extern JSample* gZoomSound;
+extern JSample* gHumiliationSound;
+extern JSample* gGotItSound;
+extern JSample* gKillSounds[4];
+extern JSample* gHolyShitSound;
 
 extern KeyFrameAnim* gKeyFrameAnims[11];
 

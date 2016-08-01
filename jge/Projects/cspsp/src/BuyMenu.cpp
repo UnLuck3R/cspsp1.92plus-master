@@ -93,7 +93,7 @@ BuyMenu::~BuyMenu()
 void BuyMenu::Update(float dt)
 {
 	int team = mPlayer->mTeam;
-	if (mEngine->GetButtonClick(PSP_CTRL_CIRCLE) || mEngine->GetButtonClick(PSP_CTRL_DOWN)) {
+	if (mEngine->GetButtonClick(PSP_CTRL_CIRCLE)) {
 		Disable();
 		//mIsActive = false;
 		return;

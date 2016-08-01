@@ -13,6 +13,7 @@
 #define TEAM 0
 #define FFA 1
 #define CTF 2
+#define ZM 3
 
 struct CollisionPoint {
 	float x;
@@ -40,6 +41,13 @@ struct Decal {
 };
 
 struct BuyZone {
+	float x1;
+	float y1;
+	float x2;
+	float y2;
+};
+
+struct BombZone {
 	float x1;
 	float y1;
 	float x2;
@@ -76,6 +84,7 @@ public:
 	std::vector<Vector2D*> mTSpawns;
 	std::vector<BuyZone> mCTBuyZones;
 	std::vector<BuyZone> mTBuyZones;
+	std::vector<BombZone> mBombZones;
 	std::vector<Node*> mNodes;
 	int mNumPoints;
 	int mNumCTs;

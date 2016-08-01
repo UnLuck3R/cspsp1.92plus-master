@@ -118,6 +118,8 @@ private:
 	bool mIsAdminMenuEnabled;
 	ListBox *mAdminPlayersListBox;
 
+	bool mLRState;
+
 public:
 	GameStateOnline(GameApp* parent);
 	~GameStateOnline();

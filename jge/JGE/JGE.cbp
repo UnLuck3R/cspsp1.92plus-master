@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="JGE" />
+		<Option pch_mode="2" />
+		<Option compiler="devkitpsp" />
+		<Build>
+			<Target title="Release Win32">
+				<Option output="lib/win/jge" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="Release" />
+				<Option type="2" />
+				<Option compiler="devkitpsp" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="/DWIN32" />
+					<Add option="/DNDEBUG" />
+					<Add option="/D_LIB" />
+					<Add option="/W3" />
+					<Add option="/Ob1" />
+					<Add option="/O2" />
+					<Add option="/MD" />
+					<Add directory="Dependencies/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="Dependencies/include" />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="/NODEFAULTLIB:LIBCMT" />
+				</Linker>
+			</Target>
+			<Target title="Debug Win32">
+				<Option output="lib/win/jge_debug" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="Debug" />
+				<Option type="2" />
+				<Option compiler="devkitpsp" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="/DWIN32" />
+					<Add option="/D_DEBUG" />
+					<Add option="/D_LIB" />
+					<Add option="/W3" />
+					<Add option="/ZI" />
+					<Add option="/Od" />
+					<Add option="/MD" />
+					<Add directory="Dependencies/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="Dependencies/include" />
+				</ResourceCompiler>
+			</Target>
+		</Build>
+		<Unit filename="../Tutorials/02.RenderingImages/Images.sln" />
+		<Unit filename="Makefile" />
+		<Unit filename="Makefile.1xx" />
+		<Unit filename="Makefile.3xx" />
+		<Unit filename="Makefile.hge" />
+		<Unit filename="include/Encoding.h" />
+		<Unit filename="include/JAnimator.h" />
+		<Unit filename="include/JApp.h" />
+		<Unit filename="include/JAssert.h" />
+		<Unit filename="include/JAudio.h" />
+		<Unit filename="include/JDistortionMesh.h" />
+		<Unit filename="include/JFileSystem.h" />
+		<Unit filename="include/JGBKFont.h" />
+		<Unit filename="include/JGE.h" />
+		<Unit filename="include/JGameLauncher.h" />
+		<Unit filename="include/JGameObject.h" />
+		<Unit filename="include/JGui.h" />
+		<Unit filename="include/JInputSystem.h" />
+		<Unit filename="include/JLBFont.h" />
+		<Unit filename="include/JMD2Model.h" />
+		<Unit filename="include/JOBJModel.h" />
+		<Unit filename="include/JParticle.h" />
+		<Unit filename="include/JParticleEffect.h" />
+		<Unit filename="include/JParticleEmitter.h" />
+		<Unit filename="include/JParticleSystem.h" />
+		<Unit filename="include/JRenderer.h" />
+		<Unit filename="include/JResourceManager.h" />
+		<Unit filename="include/JSoundSystem.h" />
+		<Unit filename="include/JSpline.h" />
+		<Unit filename="include/JSprite.h" />
+		<Unit filename="include/JTTFont.h" />
+		<Unit filename="include/JTypes.h" />
+		<Unit filename="include/Vector2D.h" />
+		<Unit filename="include/Vector3D.h" />
+		<Unit filename="include/decoder_prx.h" />
+		<Unit filename="include/hge/hgecolor.h" />
+		<Unit filename="include/hge/hgedistort.h" />
+		<Unit filename="include/hge/hgefont.h" />
+		<Unit filename="include/hge/hgeparticle.h" />
+		<Unit filename="include/hge/hgerect.h" />
+		<Unit filename="include/hge/hgevector.h" />
+		<Unit filename="include/vram.h" />
+		<Unit filename="readme.txt" />
+		<Unit filename="src/Encoding.cpp" />
+		<Unit filename="src/JAnimator.cpp" />
+		<Unit filename="src/JApp.cpp" />
+		<Unit filename="src/JDistortionMesh.cpp" />
+		<Unit filename="src/JFileSystem.cpp" />
+		<Unit filename="src/JGBKFont.cpp" />
+		<Unit filename="src/JGE.cpp" />
+		<Unit filename="src/JGameObject.cpp" />
+		<Unit filename="src/JGui.cpp" />
+		<Unit filename="src/JInputSystem.cpp" />
+		<Unit filename="src/JLBFont.cpp" />
+		<Unit filename="src/JMD2Model.cpp" />
+		<Unit filename="src/JOBJModel.cpp" />
+		<Unit filename="src/JParticle.cpp" />
+		<Unit filename="src/JParticleEffect.cpp" />
+		<Unit filename="src/JParticleEmitter.cpp" />
+		<Unit filename="src/JParticleSystem.cpp" />
+		<Unit filename="src/JResourceManager.cpp" />
+		<Unit filename="src/JSpline.cpp" />
+		<Unit filename="src/JSprite.cpp" />
+		<Unit filename="src/JTTFont.cpp" />
+		<Unit filename="src/Vector2D.cpp" />
+		<Unit filename="src/hge/hgecolor.cpp" />
+		<Unit filename="src/hge/hgedistort.cpp" />
+		<Unit filename="src/hge/hgefont.cpp" />
+		<Unit filename="src/hge/hgeparticle.cpp" />
+		<Unit filename="src/hge/hgepmanager.cpp" />
+		<Unit filename="src/hge/hgerect.cpp" />
+		<Unit filename="src/hge/hgevector.cpp" />
+		<Unit filename="src/tinyxml/tinystr.cpp" />
+		<Unit filename="src/tinyxml/tinystr.h" />
+		<Unit filename="src/tinyxml/tinyxml.cpp" />
+		<Unit filename="src/tinyxml/tinyxml.h" />
+		<Unit filename="src/tinyxml/tinyxmlerror.cpp" />
+		<Unit filename="src/tinyxml/tinyxmlparser.cpp" />
+		<Unit filename="src/unzip/crypt.h" />
+		<Unit filename="src/unzip/ioapi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/unzip/ioapi.h" />
+		<Unit filename="src/unzip/mztools.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/unzip/mztools.h" />
+		<Unit filename="src/unzip/unzip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/unzip/unzip.h" />
+		<Unit filename="src/win/JRenderer_Win.cpp" />
+		<Unit filename="src/win/JSoundSystem_Win.cpp" />
+		<Unit filename="src/winmain.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

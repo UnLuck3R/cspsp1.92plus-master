@@ -391,6 +391,31 @@ bool TileMap::Load(char *mapFile, Gun guns[], int gameType)
 						} 
 					}
 				}
+				else if (strcmp(section,"bombzones") == 0) {
+					while (strncmp(fgets(line,4096,file),"}",1) != 0) {
+						s = line;
+						while (s) {
+							BombZone bombzone = BombZone();
+							int x2, y2;
+							sscanf(s,"(%d,%d,%d,%d,%d)", &index, &x, &y, &x2, &y2);
+							bombzone.x1 = x;
+							bombzone.y1 = y;
+							bombzone.x2 = x2;
+							bombzone.y2 = y2;
+							if (index == 0) {
+							}
+							else if (index == 1) {
+								mBombZones.push_back(bombzone);
+							}
+							
+							s = strchr(s,';'); 
+							if (s != NULL) {
+								s += 1;
+							}
+						} 
+					}
+				}
+
 				else {
 					char gunsSection[32] = "guns";
 					if (gameType == FFA) {
@@ -538,6 +563,7 @@ void TileMap::Unload()
 
 		mCTBuyZones.clear();
 		mTBuyZones.clear();
+		mBombZones.clear();
 
 		for (unsigned int i=0;i<mNodes.size();i++) {
 			SAFE_DELETE(mNodes[i]);

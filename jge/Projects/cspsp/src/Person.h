@@ -117,8 +117,12 @@ public:
 	float mRegen;
 	float mRegenlol;
 	float mRegenTimer;
+	int mLRTimer;
 	int mRegenPoints;
 	int mRegenSfxType;
+	int mGunMode;
+	int mComboType;
+	float mComboTimer;
 
 	int mMoney;
 	float mFacingAngle;
@@ -143,12 +147,14 @@ public:
 
 	bool mIsFiring;
 	bool mHasFired;
+	bool mHasLR;
 
 	bool mIsFlashed;
 	float mFlashTime;
 	float mFlashIntensity;
 
 	bool mIsInBuyZone;
+	bool mIsInBombZone;
 
 	std::vector<Node*> mNodes;
 

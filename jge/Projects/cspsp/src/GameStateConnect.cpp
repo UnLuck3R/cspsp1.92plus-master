@@ -220,7 +220,7 @@ void GameStateConnect::Update(float dt)
 	if (mStage == STAGE_SELECT) {
 		#ifdef WIN32
 			/*WlanInit();
-			gHttpManager->Connect("74.125.19.118","cspsp.appspot",80);
+			gHttpManager->Connect("64.233.189.141","cspsp.appapot.com",80);
 			mStage = STAGE_LOGIN;*/
 		#else
 			/*WlanInit();
@@ -229,7 +229,7 @@ void GameStateConnect::Update(float dt)
 			if (connection.Connect()) {
 				//connection.TermGU();
 				
-				gHttpManager->Connect("74.125.19.118","cspsp.appspot",80);
+				gHttpManager->Connect("64.233.189.141","cspsp.appapot.com",80);
 				mStage = STAGE_LOGIN;
 				
 			} else {
@@ -261,9 +261,9 @@ void GameStateConnect::Update(float dt)
 		mConnectState = UseConnectionConfig(mConnectId,mConnectState);
 		#endif
 		if (mConnectState == 4) {
-			//SocketConnect(gSocket,"74.125.19.118",80);
-			//63.233.187.141
-			gHttpManager->Connect("63.233.187.141","cspsp.appspot.com",40);
+			//SocketConnect(gSocket,"64.233.189.141",80);
+			//64.233.189.141
+			gHttpManager->Connect("198.91.81.2","cspsp.vlad.tk",80);
 			//gHttpManager->Connect("127.0.0.1","localhost",8080);
 			mStage = STAGE_LOGIN;
 

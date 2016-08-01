@@ -17,6 +17,12 @@ Hud::Hud()
 
 	mEventTime = 0;
 	mEventType = 0;
+	mFunType = 0;
+	mFunTime = 0;
+	mFunTipTime = 0;
+	mFunTipType = 0;
+	mFunComboTime = 0;
+	mFunComboType = 0;
 
 	strcpy(mEventText,"");
 }
@@ -84,6 +90,38 @@ void Hud::Update(float dt)
 		}
 	}
 
+	if (mFunComboTime >= 0 && mFunComboType != 0) {
+		mFunComboTime -= dt;
+		if (mFunComboTime < 0) {
+			mFunComboTime = 0;
+			mFunComboType = 0;
+		}
+	}
+	if (mFunTime >= 0 && mFunType != 0) {
+		mFunTime -= dt;
+		if (mFunTime < 0) {
+			mFunTime = 0;
+			mFunType = 0;
+			mFunTipTime = 0;
+			mFunTipType = 0;
+		}
+	}
+
+	if (mFunTipTime >= 0 && mFunTipType == 0) {
+		mFunTipTime -= dt/10;
+		if (mFunTipTime < 0) {
+			mFunTipTime = 0;
+			mFunTipType = 1;
+		}
+	}
+
+	if (mFunTipTime >= 0 && mFunTipType == 1) {
+		mFunTipTime += dt/10;
+		if (mFunTipTime > 50) {
+			mFunTipTime = 50;
+			mFunTipType = 0;
+		}
+	}
 }
 
 
@@ -315,6 +353,81 @@ void Hud::Render()
 
 			gFont->SetColor(ARGB(255,255,200,0));
 			gFont->DrawShadowedString(buffer,SCREEN_WIDTH_2,y,JGETEXT_CENTER);
+		}
+	}
+	if (mFunTime > 0.0f) {
+		float x = SCREEN_WIDTH/2;
+		float y = SCREEN_HEIGHT-65;
+
+		float scale = 0.75f;
+		int alpha = mFunTipTime*255/50;
+		if (mFunTime > 1950) {
+			scale = 0.75f+(2000-mFunTime)/50.0f*0.25f;
+		}
+		else if (mFunTime > 1900) {
+			scale = 1.0f;
+		}
+		else if (mFunTime > 1700) {
+			scale = 1.0f-(1900-mFunTime)/200.0f*0.25f;
+		}
+		y -= (scale-0.75f)*10;
+		gFont->SetScale(scale);
+		gFont->SetColor(ARGB(alpha,0,255,0));
+		if (mFunType == 1) {
+			gFont->DrawShadowedString("Humiliation!!!",x,y,JGETEXT_CENTER);
+		}
+		else if (mFunType == 2) {
+			gFont->DrawShadowedString("You got it!!!",x,y,JGETEXT_CENTER);
+		}
+	}
+	if (mFunComboTime > 0.0f) {
+		float y = 25;
+
+		char buffer[256];
+		float scale = 1.25f;
+		int alpha = 200;
+		if (mFunComboTime > 700) {
+			//scale = 0.75f+(3000-mFunComboTime)/50.0f*0.25f;
+			y += 5-(1000-mFunComboTime)/60;
+			alpha = (1000-mFunComboTime)*200/300;
+		}
+		else if (mFunComboTime < 300) {
+			y += 10-(1000-mFunComboTime)/70;
+			alpha = mFunComboTime*200/300;
+			//scale = 1.0f-(2900-mFunComboTime)/200.0f*0.25f;
+		}
+		//y -= (scale-0.75f)*10;
+		gFont->SetScale(scale);
+		if (mFunComboType == 1) {
+			gFont->SetColor(ARGB(alpha,0,255,255));
+			gFont->DrawString("1",SCREEN_WIDTH/2-2,y,JGETEXT_RIGHT);
+			gFont->SetColor(ARGB(alpha,190,190,190));
+			gFont->DrawString("Kill",SCREEN_WIDTH/2+2,y,JGETEXT_LEFT);
+		}
+		else if (mFunComboType == 2) {
+			gFont->SetColor(ARGB(alpha,0,255,50));
+			gFont->DrawString("2",SCREEN_WIDTH/2-2,y,JGETEXT_RIGHT);
+			gFont->SetColor(ARGB(alpha,190,190,190));
+			gFont->DrawString("Kill",SCREEN_WIDTH/2+2,y,JGETEXT_LEFT);
+		}
+		else if (mFunComboType == 3) {
+			gFont->SetColor(ARGB(alpha,255,100,0));
+			gFont->DrawString("3",SCREEN_WIDTH/2-2,y,JGETEXT_RIGHT);
+			gFont->SetColor(ARGB(alpha,190,190,190));
+			gFont->DrawString("Kill",SCREEN_WIDTH/2+2,y,JGETEXT_LEFT);
+		}
+		else if (mFunComboType == 4) {
+			gFont->SetColor(ARGB(alpha,255,0,0));
+			gFont->DrawString("4",SCREEN_WIDTH/2-2,y,JGETEXT_RIGHT);
+			gFont->SetColor(ARGB(alpha,190,190,190));
+			gFont->DrawString("Kill",SCREEN_WIDTH/2+2,y,JGETEXT_LEFT);
+		}
+		else if (mFunComboType == 5) {
+			gFont->SetColor(ARGB(alpha,255,0,255));
+			sprintf(buffer,"%d",mPlayer->mComboType);
+			gFont->DrawString(buffer,SCREEN_WIDTH/2-2,y,JGETEXT_RIGHT);
+			gFont->SetColor(ARGB(alpha,190,190,190));
+			gFont->DrawString("Kill!!!",SCREEN_WIDTH/2+2,y,JGETEXT_LEFT);
 		}
 	}
 }

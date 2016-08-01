@@ -69,7 +69,11 @@ JSample* gGrenadeBounceSound;
 JSample* gHitIndicatorSound;
 JSample* gRoundStartSounds[3];
 JSample* gRegenSound;
-JSample* gZoomSounds[2];
+JSample* gZoomSound;
+JSample* gHumiliationSound;
+JSample* gGotItSound;
+JSample* gKillSounds[4];
+JSample* gHolyShitSound;
 
 KeyFrameAnim* gKeyFrameAnims[11];
 
